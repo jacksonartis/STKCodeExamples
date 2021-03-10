@@ -3,7 +3,7 @@ app = actxGetRunningServer('STK12.Application');
 root = app.Personality2;
 scenario = root.CurrentScenario;
 coverageDefinitionName = 'CoverageDefinition1';
-assetName = 'Satellite1';
+assetName = 'ISS';
 timestep = 86400;
 
 
@@ -47,18 +47,42 @@ azimuthCalc.InputAngle = azimuthAngle;
 elevationCalc = fac.Vgt.CalcScalars.Factory.CreateCalcScalarAngle('ElevationValues','Elevation');
 elevationCalc.InputAngle = elevationAngle;
 
+% % Add Rate Scalar Baby
+rangeRate = fac.Vgt.CalcScalars.Factory.CreateCalcScalarDerivative('RangeRate','Rate of change in range');
+rangeRate.Scalar = rangeCalc;
+
+azRate = fac.Vgt.CalcScalars.Factory.CreateCalcScalarDerivative('AzimuthRate','Rate of change in azimuth');
+azRate.Scalar = azimuthCalc;
+
+elRate = fac.Vgt.CalcScalars.Factory.CreateCalcScalarDerivative('ElevationRate','Rate of change in elevation');
+elRate.Scalar = elevationCalc;
+
 % Add and Configure Figures of Merit
 rangeFOM = covDef.Children.New('eFigureOfMerit','Range');
 rangeFOM.SetScalarCalculationDefinition(rangeCalc.Path);
 rangeFOM.Definition.TimeStep = 1;
 
+rangeRateFOM = covDef.Children.New('eFigureOfMerit','RangeRate');
+rangeRateFOM.SetScalarCalculationDefinition(rangeRate.Path);
+rangeRateFOM.Definition.TimeStep = 1;
+
 azFOM = covDef.Children.New('eFigureOfMerit','Azimuth');
 azFOM.SetScalarCalculationDefinition(azimuthCalc.Path);
 azFOM.Definition.TimeStep = 1;
 
+azRateFOM = covDef.Children.New('eFigureOfMerit','AzimuthRate');
+azRateFOM.SetScalarCalculationDefinition(azRate.Path);
+azRateFOM.Definition.TimeStep = 1;
+
 elFOM = covDef.Children.New('eFigureOfMerit','Elevation');
 elFOM.SetScalarCalculationDefinition(elevationCalc.Path);
 elFOM.Definition.TimeStep = 1;
+
+elRateFOM = covDef.Children.New('eFigureOfMerit','ElevationRate');
+elRateFOM.SetScalarCalculationDefinition(elRate.Path);
+elRateFOM.Definition.TimeStep = 1;
+
+
 
 % Compute Coverage Definition
 covDef.ComputeAccesses;
@@ -85,6 +109,18 @@ for i = 1:length(timesteps)
     elDP = elFOM.DataProviders.Item('Time Value By Point');
     elDP.PreData = timesteps(i);
     elValues = cell2mat(elDP.Exec.DataSets.GetDataSetByName('FOM Value').GetValues);
+    
+    rangeRateDP = rangeRateFOM.DataProviders.Item('Time Value By Point');
+    rangeRateDP.PreData = timesteps(i);
+    rangeRateValues = cell2mat(rangeRateDP.Exec.DataSets.GetDataSetByName('FOM Value').GetValues);
+    
+    azRateDP = azRateFOM.DataProviders.Item('Time Value By Point');
+    azRateDP.PreData = timesteps(i);
+    azRateValues = cell2mat(azRateDP.Exec.DataSets.GetDataSetByName('FOM Value').GetValues);
+    
+    elRateDP = elRateFOM.DataProviders.Item('Time Value By Point');
+    elRateDP.PreData = timesteps(i);
+    elRateValues = cell2mat(elRateDP.Exec.DataSets.GetDataSetByName('FOM Value').GetValues);
 end
 
 
