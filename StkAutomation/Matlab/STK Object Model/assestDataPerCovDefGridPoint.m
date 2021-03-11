@@ -1,14 +1,19 @@
 % Grab STK Instance
-app = actxGetRunningServer('STK12.Application');
+app = actxGetRunningServer('STK11.Application');
 root = app.Personality2;
 scenario = root.CurrentScenario;
 coverageDefinitionName = 'CoverageDefinition1';
-assetName = 'ISS';
+facilityName = 'Eval_Facility2';
+assetName = 'TAP1';
 timestep = 86400;
 
 
 % Add Facility
-fac = scenario.Children.New('eFacility','Eval_Facility');
+if scenario.Children.Contains('eFacility', facilityName)
+    fac = scenario.Children.Item(facilityName);
+else
+    fac = scenario.Children.New('eFacility',facilityName);
+end
 facCenter = fac.Vgt.Points.Item('Center');
 nedX = fac.Vgt.Vectors.Item('NorthEastDown.X');
 nedZ = fac.Vgt.Vectors.Item('NorthEastDown.Z');
@@ -22,63 +27,123 @@ stopTime = asset.Vgt.Events.Item('AvailabilityStopTime').ReferenceEventInterval.
 
 % Configure Connect Command
 covDef = scenario.Children.Item(coverageDefinitionName);
-gridConstraintCommand = strcat('Cov */CoverageDefinition/',coverageDefinitionName," ",'Grid GridConstraint Facility AltAtTerrain Facility/Eval_Facility UseActualObject');   
+gridConstraintCommand = strcat('Cov */CoverageDefinition/',coverageDefinitionName," ",'Grid GridConstraint Facility AltAtTerrain Facility/', fac.InstanceName, " ", 'UseActualObject');   
 root.ExecuteCommand(gridConstraintCommand);
 
 % Add AWB Components
-rangeVec = fac.Vgt.Vectors.Factory.CreateDisplacementVector('Range',facCenter,assetCenter);
+if fac.Vgt.Vectors.Contains('Range')
+    rangeVec = fac.Vgt.Vectors.Item('Range');
+else
+    rangeVec = fac.Vgt.Vectors.Factory.CreateDisplacementVector('Range',facCenter,assetCenter);
+end
 rangeVec.Apparent = 1;
 
-azimuthAngle = fac.Vgt.Angles.Factory.Create('Azimuth','Azimuth Angle','eCrdnAngleTypeDihedralAngle');
+if fac.Vgt.Angles.Contains('Azimuth')
+    azimuthAngle = fac.Vgt.Angles.Item('Azimuth');
+else
+    azimuthAngle = fac.Vgt.Angles.Factory.Create('Azimuth','Azimuth Angle','eCrdnAngleTypeDihedralAngle');
+end
 azimuthAngle.FromVector.SetVector(nedX);
 azimuthAngle.ToVector.SetVector(rangeVec);
 azimuthAngle.PoleAbout.SetVector(nedZ);
 
-elevationAngle = fac.Vgt.Angles.Factory.Create('Elevation','Elevation Angle','eCrdnAngleTypeToPlane');
+if fac.Vgt.Angles.Contains('Elevation')
+    elevationAngle = fac.Vgt.Angles.Item('Elevation');
+else
+    elevationAngle = fac.Vgt.Angles.Factory.Create('Elevation','Elevation Angle','eCrdnAngleTypeToPlane');
+end
 elevationAngle.ReferenceVector.SetVector(rangeVec);
 elevationAngle.ReferencePlane.SetPlane(bodyPlane);
 
-rangeCalc = fac.Vgt.CalcScalars.Factory.CreateCalcScalarVectorMagnitude('RangeValues', 'Range');
+if fac.Vgt.CalcScalars.Contains('RangeValues')
+    rangeCalc = fac.Vgt.CalcScalars.Item('RangeValues');
+else
+    rangeCalc = fac.Vgt.CalcScalars.Factory.CreateCalcScalarVectorMagnitude('RangeValues', 'Range');
+end
 rangeCalc.InputVector = rangeVec;
 
-azimuthCalc =  fac.Vgt.CalcScalars.Factory.CreateCalcScalarAngle('AzimuthValues','Azimuth');
+if fac.Vgt.CalcScalars.Contains('AzimuthValues')
+    azimuthCalc = fac.Vgt.CalcScalars.Item('AzimuthValues');
+else
+    azimuthCalc =  fac.Vgt.CalcScalars.Factory.CreateCalcScalarAngle('AzimuthValues','Azimuth');
+end
 azimuthCalc.InputAngle = azimuthAngle;
 
-elevationCalc = fac.Vgt.CalcScalars.Factory.CreateCalcScalarAngle('ElevationValues','Elevation');
+if fac.Vgt.CalcScalars.Contains('ElevationValues')
+    elevationCalc = fac.Vgt.CalcScalars.Item('ElevationValues');
+else
+    elevationCalc =  fac.Vgt.CalcScalars.Factory.CreateCalcScalarAngle('ElevationValues','Elevation');
+end
 elevationCalc.InputAngle = elevationAngle;
 
-% % Add Rate Scalar Baby
-rangeRate = fac.Vgt.CalcScalars.Factory.CreateCalcScalarDerivative('RangeRate','Rate of change in range');
+% Add Rate Scalar
+if fac.Vgt.CalcScalars.Contains('RangeRate')
+    rangeRate = fac.Vgt.CalcScalars.Item('RangeRate');
+else
+   rangeRate = fac.Vgt.CalcScalars.Factory.CreateCalcScalarDerivative('RangeRate','Rate of change in range');
+end
 rangeRate.Scalar = rangeCalc;
 
-azRate = fac.Vgt.CalcScalars.Factory.CreateCalcScalarDerivative('AzimuthRate','Rate of change in azimuth');
+if fac.Vgt.CalcScalars.Contains('AzimuthRate')
+    azRate = fac.Vgt.CalcScalars.Item('AzimuthRate');
+else
+   azRate = fac.Vgt.CalcScalars.Factory.CreateCalcScalarDerivative('AzimuthRate','Rate of change in azimuth');
+end
 azRate.Scalar = azimuthCalc;
 
-elRate = fac.Vgt.CalcScalars.Factory.CreateCalcScalarDerivative('ElevationRate','Rate of change in elevation');
+if fac.Vgt.CalcScalars.Contains('ElevationRate')
+   elRate = fac.Vgt.CalcScalars.Item('ElevationRate');
+else
+   elRate = fac.Vgt.CalcScalars.Factory.CreateCalcScalarDerivative('ElevationRate','Rate of change in elevation');
+end
 elRate.Scalar = elevationCalc;
 
 % Add and Configure Figures of Merit
-rangeFOM = covDef.Children.New('eFigureOfMerit','Range');
+if covDef.Children.Contains('eFigureOfMerit', 'Range')
+    rangeFOM = covDef.Children.Item('Range');
+else
+    rangeFOM = covDef.Children.New('eFigureOfMerit','Range');
+end
 rangeFOM.SetScalarCalculationDefinition(rangeCalc.Path);
 rangeFOM.Definition.TimeStep = 1;
 
-rangeRateFOM = covDef.Children.New('eFigureOfMerit','RangeRate');
+if covDef.Children.Contains('eFigureOfMerit', 'RangeRate')
+    rangeRateFOM = covDef.Children.Item('RangeRate');
+else
+    rangeRateFOM = covDef.Children.New('eFigureOfMerit','RangeRate');
+end
 rangeRateFOM.SetScalarCalculationDefinition(rangeRate.Path);
 rangeRateFOM.Definition.TimeStep = 1;
 
-azFOM = covDef.Children.New('eFigureOfMerit','Azimuth');
+if covDef.Children.Contains('eFigureOfMerit', 'Azimuth')
+    azFOM = covDef.Children.Item('Azimuth');
+else
+    azFOM = covDef.Children.New('eFigureOfMerit','Azimuth');
+end
 azFOM.SetScalarCalculationDefinition(azimuthCalc.Path);
 azFOM.Definition.TimeStep = 1;
 
-azRateFOM = covDef.Children.New('eFigureOfMerit','AzimuthRate');
+if covDef.Children.Contains('eFigureOfMerit', 'AzimuthRate')
+    azRateFOM = covDef.Children.Item('AzimuthRate');
+else
+    azRateFOM = covDef.Children.New('eFigureOfMerit','AzimuthRate');
+end
 azRateFOM.SetScalarCalculationDefinition(azRate.Path);
 azRateFOM.Definition.TimeStep = 1;
 
-elFOM = covDef.Children.New('eFigureOfMerit','Elevation');
+if covDef.Children.Contains('eFigureOfMerit', 'Elevation')
+    elFOM = covDef.Children.Item('Elevation');
+else
+    elFOM = covDef.Children.New('eFigureOfMerit','Elevation');
+end
 elFOM.SetScalarCalculationDefinition(elevationCalc.Path);
 elFOM.Definition.TimeStep = 1;
 
-elRateFOM = covDef.Children.New('eFigureOfMerit','ElevationRate');
+if covDef.Children.Contains('eFigureOfMerit', 'ElevationRate')
+    elRateFOM = covDef.Children.Item('ElevationRate');
+else
+    elRateFOM = covDef.Children.New('eFigureOfMerit','ElevationRate');
+end
 elRateFOM.SetScalarCalculationDefinition(elRate.Path);
 elRateFOM.Definition.TimeStep = 1;
 
