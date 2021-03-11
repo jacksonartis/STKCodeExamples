@@ -150,6 +150,7 @@ elRateFOM.Definition.TimeStep = 1;
 
 
 % Compute Coverage Definition
+covDef.AssetList.Add(asset.Path)
 covDef.ComputeAccesses;
 
 % Get Timesteps
