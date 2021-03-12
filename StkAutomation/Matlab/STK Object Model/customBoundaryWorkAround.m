@@ -1,3 +1,5 @@
+%% The Bug that makes this snippet necessary is fixed by STK v12.2
+
 % Grab STK Instance
 app = actxGetRunningServer('STK12.Application');
 root = app.Personality2;
