@@ -21,13 +21,8 @@ switch whichAngle
 end 
 values = inputdlg({'Half Angle 1','Half Angle 2'},...
               'Customer', [1 30; 1 30]);
-if str2double(values{1}) > str2double(values{2})
-    max_angle = str2double(values{1});
-    min_angle = -str2double(values{2});
-else    
-    max_angle = str2double(values{2});
-    min_angle = -str2double(values{1});
-end 
+max_angle = max(str2double(values));
+min_angle = -min(str2double(values));
 
 % Get Handles
 keepGoing = true;

@@ -2,8 +2,6 @@
 app = actxGetRunningServer('STK12.Application');
 root = app.Personality2;
 scenario = root.CurrentScenario;
-% horizontal is about Y
-% vertical is about X
 
 % Variables
 answers = inputdlg({'Parent Object Name','Sensor Name'},...
@@ -13,7 +11,7 @@ sensorName = string(answers{2});
 sat = scenario.Children.Item(satName);
 sensor = sat.Children.Item(sensorName);
 whichAngle = questdlg('Which Half Angle would you like to be non-uniform?', ...
-	'Dessert Menu', ...
+	'Choices', ...
 	'Horizontal','Vertical','No');
 switch whichAngle
         case 'Horizontal'
@@ -23,9 +21,12 @@ switch whichAngle
 end 
 values = inputdlg({'Half Angle 1','Half Angle 2'},...
               'Customer', [1 30; 1 30]);
-angle_1 = str2double(values{1});
-angle_2 = str2double(values{1});
-
+max_angle = max(str2double(values));
+min_angle = -min(str2double(values{2});
+else    
+    max_angle = str2double(values{2});
+    min_angle = -str2double(values{1});
+end 
 
 % Get Handles
 keepGoing = true;
@@ -41,7 +42,7 @@ while keepGoing
     vector = sensor.Vgt.Vector.Factory.CreateDisplacementVector(vectorName, sensor.Vgt.Point.Item('Center'), obj.Vgt.Point.Item('Center'));
     angleName = strcat('ConstrainingAngle',string(i));
     angle = sensor.Vgt.Angle.Factory.Create(angleName, '', 'eCrdnAngleTypeDihedralAngle');
-    angle.PoleAbout.SetVector(sensor.Vgt.Vector.Item(strcat('Body.',string(axis)));
+    angle.PoleAbout.SetVector(sensor.Vgt.Vector.Item(strcat('Body.',axis)));
     angle.ToVector.SetVector(vector);
     angle.SignedAngle = 1;
     anglePath = angle.Path;
@@ -50,12 +51,13 @@ while keepGoing
     angleConstraint = sensor.AccessConstraints.AddConstraint('eCstrCrdnAngle');
     angleConstraint.EnableMin = 1;
     angleConstraint.EnableMax = 1;
-    angleConstraint.Max = sensor.Pattern.VerticalHalfAngle;
-    angleConstraint.Min = -minValue;
+    angleConstraint.Max = max_angle;
+    angleConstraint.Min = min_angle;
+
     angleConstraint.Reference = anglePath;
     i = i + 1;
     continueAns = questdlg('Add More Objects?', ...
-	'Dessert Menu', ...
+	'Choices', ...
 	'Yes','No','No');
     switch continueAns
         case 'Yes'
