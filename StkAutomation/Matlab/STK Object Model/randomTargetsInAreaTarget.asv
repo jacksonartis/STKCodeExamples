@@ -9,11 +9,10 @@ values = inputdlg({'Area Target Name','Number of Targets'},...
           
 areaTarget = scenario.Children.Item(values{1});
 numberOfTargets = round(str2double(values{2}));
-
 if areaTarget.AccessConstraints.IsNamedConstraintActive('ElevationAngle') && areaTarget.AccessConstraints.GetActiveNamedConstraint('ElevationAngle').Angle ~= 90
-       areaTarget.AccessConstraints.GetActiveNamedConstraint('ElevationAngle').Angle = 90;
+       currTarget.AccessConstraints.GetActiveNamedConstraint('ElevationAngle').Angle = 90;
 else
-       cons = areaTarget.AccessConstraints.AddNamedConstraint('ElevationAngle');
+       cons = currTarget.AccessConstraints.AddNamedConstraint('ElevationAngle');
        cons.Angle = 90;
 end
 
@@ -30,7 +29,15 @@ continueAns = questdlg('Add Facilities or Targets', ...
     end 
 
 
-% Find Exten
+% Find Extents
+covDef = scenario.Children.New('eCoverageDefinition','Test');
+covDef.Grid.BoundsType = 'eBoundsCustomBoundary';
+covDef.Grid.Bounds.BoundaryObjects.AddObject(areaTarget);
+covDef.Grid.Resolution.LatLon = 0.5;
+pointDP = covDef.DataProviders.Item('Grid Point Locations').Exec;
+lats = cell2mat(pointDP.DataSets.GetDataSetByName('Latitude').GetValues);
+longs = cell2mat(pointDP.DataSets.GetDataSetByName('Longitude').GetValues);
+covDef.Unload;
 maxLat = max(lats);
 minLat = min(lats);
 maxLong = max(longs);
@@ -51,6 +58,12 @@ for i = 1:numberOfTargets
         newObj.Position.AssignGeocentric(latValue,longValue,1);
         access.ComputeAccess;
     end
-    access.ClearAccess;
 end 
 
+% Create Point File
+fileEnding = '.pnt';
+unitlessValue = 'randomValues';
+filepath = uigetdir;
+newFilepath = strcat(filepath,'\',unitlessValue,fileEnding);
+fid = fopen(newFilepath,'w+');
+fprintf(fid, 'stk.v.12.0\n\nBEGIN PointList\n\n');
