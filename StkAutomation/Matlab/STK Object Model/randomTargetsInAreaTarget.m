@@ -10,7 +10,7 @@ values = inputdlg({'Area Target Name','Number of Targets'},...
 areaTarget = scenario.Children.Item(values{1});
 numberOfTargets = round(str2double(values{2}));
 
-if areaTarget.AccessConstraints.IsNamedConstraintActive('ElevationAngle') && areaTarget.AccessConstraints.GetActiveNamedConstraint('ElevationAngle').Angle ~= 90
+if areaTarget.AccessConstraints.IsNamedConstraintActive('ElevationAngle')
        areaTarget.AccessConstraints.GetActiveNamedConstraint('ElevationAngle').Angle = 90;
 else
        cons = areaTarget.AccessConstraints.AddNamedConstraint('ElevationAngle');
@@ -30,7 +30,10 @@ continueAns = questdlg('Add Facilities or Targets', ...
     end 
 
 
-% Find Exten
+% Find Extents
+points = cell2mat(areaTarget.AreaTypeData.ToArray);
+lats = points(:,1);
+longs = points(:,2);
 maxLat = max(lats);
 minLat = min(lats);
 maxLong = max(longs);
