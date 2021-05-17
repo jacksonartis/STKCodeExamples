@@ -1,0 +1,13 @@
+<object class="Application" name="STK" path="/Application/STK">
+	<children>
+		<object class="Scenario" name="Scenario7" path="/Application/STK/Scenario/Scenario7">
+			<children>
+				<object class="Satellite" name="Satellite1" path="/Application/STK/Scenario/Scenario7/Satellite/Satellite1"/>
+				<object class="Satellite" name="Satellite111" path="/Application/STK/Scenario/Scenario7/Satellite/Satellite111"/>
+				<object class="Satellite" name="Satellite112" path="/Application/STK/Scenario/Scenario7/Satellite/Satellite112"/>
+				<object class="Satellite" name="Satellite121" path="/Application/STK/Scenario/Scenario7/Satellite/Satellite121"/>
+				<object class="Satellite" name="Satellite122" path="/Application/STK/Scenario/Scenario7/Satellite/Satellite122"/>
+			</children>
+		</object>
+	</children>
+</object>
