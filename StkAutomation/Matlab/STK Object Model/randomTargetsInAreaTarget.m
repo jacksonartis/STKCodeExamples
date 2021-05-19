@@ -40,6 +40,10 @@ maxLong = max(longs);
 minLong = min(longs);
 
 % Add Objects
+whiteCounter = 1;
+redCounter = 1;
+blueCounter = 1;
+
 for i = 1:numberOfTargets
     latValue = minLat + (maxLat-minLat)*rand;
     longValue = minLong + (maxLong-minLong)*rand;
@@ -55,5 +59,22 @@ for i = 1:numberOfTargets
         access.ComputeAccess;
     end
     access.ClearAccess;
+    newName = '';
+    nameAns = questdlg('Which Name', ...
+        'Choices', ...
+        'Red','White','Blue','Blue');
+        switch nameAns
+            case 'Red'
+                newName = strcat('Red',string(redCounter));
+                redCounter = redCounter + 1;
+            case 'White'
+                newName = strcat('White',string(whiteCounter));
+                whiteCounter = whiteCounter + 1;
+            case 'Blue'
+                newName = strcat('Blue',string(blueCounter));
+                blueCounter = blueCounter + 1;
+        end 
+    nameCommand = strcat('Rename */',objectType,'/',name, " ", newName);
+    root.ExecuteCommand(nameCommand);
 end 
 
