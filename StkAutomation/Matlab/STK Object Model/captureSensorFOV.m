@@ -4,10 +4,10 @@ root = app.Personality2;
 scenario = root.CurrentScenario;
 
 % Get
-sat = scenario.Children.Item('Satellite1');
+sat = scenario.Children.Item('Satellite111');
 sensor = sat.Children.Item('Sensor1');
-sensorDP = sensor.DataProviders.Item('Pattern Intersection').Exec(scenario.StartTime, '10 May 2021 16:01:00.000', 1);
-sensorDP = sensorDP.Intervals.Item(int32(0));
+sensorDP = sensor.DataProviders.Item('Pattern Intersection').Exec(scenario.StartTime, scenario.StopTime, 3600);
+
 
 lats = cell2mat(sensorDP.DataSets.GetDataSetByName('Latitude').GetValues);
 lon = cell2mat(sensorDP.DataSets.GetDataSetByName('Longitude').GetValues);
