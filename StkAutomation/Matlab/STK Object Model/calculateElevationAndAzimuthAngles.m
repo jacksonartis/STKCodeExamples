@@ -3,11 +3,11 @@ app = actxGetRunningServer('STK12.Application');
 root = app.Personality2;
 scenario = root.CurrentScenario;
 
-values = inputdlg({'From Object','To Object'},...
-              'Customer', [1 30; 1 30]);
+values = inputdlg({'From Object','To Object','Time between data points in seconds'},...
+              'Customer', [1 30; 1 30; 1 30]);
 facilityName = values{1};
 assetName = values{2};
-timestep = 86400;
+timestep = str2double(values{3});
 
 fac = scenario.Children.Item(facilityName);
 asset = scenario.Children.Item(assetName);
@@ -64,3 +64,13 @@ else
     elevationCalc =  fac.Vgt.CalcScalars.Factory.CreateCalcScalarAngle('ElevationValues','Elevation');
 end
 elevationCalc.InputAngle = elevationAngle;
+
+azDP = fac.DataProviders.Item('Scalar Calculations').Group.Item('AzimuthValues').Exec(scenario.StartTime, scenario.StopTime, timestep);
+elDP = fac.DataProviders.Item('Scalar Calculations').Group.Item('ElevationValues').Exec(scenario.StartTime, scenario.StopTime, timestep);
+
+times = cell2mat(azDP.DataSets.GetDataSetByName('Time').GetValues);
+azAngles = cell2mat(azDP.DataSets.GetDataSetByName('Scalar').GetValues);
+elAngles = cell2mat(elDP.DataSets.GetDataSetByName('Scalar').GetValues);
+
+total_matrix = horzcat(string(times), string(azAngles), string(elAngles))
+
